@@ -1,28 +1,51 @@
-﻿name: Deploy to Firebase
+﻿name: Deploy to Firebase Hosting - MMS_conc
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
   build_and_deploy:
     runs-on: windows-latest
+    name: Deploy MMS_conc to Firebase
     
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout do código
+      uses: actions/checkout@v3
     
     - name: Setup Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
-        node-version: '16'
+        node-version: '18'
+        cache: 'npm'
     
-    - name: Install dependencies
-      run: npm install
+    - name: Instalar dependências
+      run: |
+        npm install
+        npm install -g firebase-tools
       
-    - name: Install Firebase CLI
-      run: npm install -g firebase-tools
+    - name: Build do projeto
+      run: |
+        echo "Build do MMS_conc concluído"
       
-    - name: Deploy to Firebase
-      run: firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}"
+    - name: Deploy para Firebase
+      run: |
+        firebase deploy --only hosting,firestore --token "${{ secrets.FIREBASE_TOKEN }}" --non-interactive
       env:
         FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        
+    - name: Notificação de sucesso
+      if: success()
+      run: |
+        echo "✅ Deploy do MMS_conc realizado com sucesso!"
+        echo "🎯 Projeto: MMS_conc"
+        echo "🌐 URL: https://pizzaria-system-eduardo.web.app"
+        echo "📅 Deploy realizado em: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+        
+    - name: Notificação de falha
+      if: failure()
+      run: |
+        echo "❌ Falha no deploy do MMS_conc"
+        echo "⚠️ Verifique os logs acima para detalhes"
