@@ -1,0 +1,15 @@
+﻿rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Imagens públicas
+    match /images/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Uploads de usuários
+    match /uploads/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
